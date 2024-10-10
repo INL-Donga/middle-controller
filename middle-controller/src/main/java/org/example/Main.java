@@ -1,19 +1,18 @@
 package org.example;
 
-import javax.naming.ldap.SortKey;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 public class Main {
     public static final int client_count = 1;
+
+    public static final String filePath = "/mnt/parameters/";
+
 
     public static int client_id = 1;
 
@@ -21,8 +20,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        MasterHandler masterHandler = null;
-        List<FileHandler> fileHandlerList = new ArrayList<>();
+         MasterHandler masterHandler = null;
+         List<FileHandler> fileHandlerList = new ArrayList<>();
 
         try (ServerSocket serverSocket = new ServerSocket(9090)) {
 
@@ -36,7 +35,7 @@ public class Main {
                     masterHandler = new MasterHandler(clientSocket,client_count) ;
                 }
                 else{
-                    FileHandler fileHandler = new FileHandler(clientSocket);
+                    FileHandler fileHandler = new FileHandler(clientSocket,client_id);
                     fileHandlerList.add(fileHandler);
 
                     // 클라이언트별로 고유번호 할당하기
@@ -79,10 +78,11 @@ public class Main {
                 }
             }
 
-            // 클라이언트로부터 학습 완료 메시지 받기
+            // 클라이언트로부터 학습 .pt 파일 받기
             for(FileHandler fileHandler : fileHandlerList){
-                String msg = fileHandler.getCompleteMessage();
-                System.out.println(logMessage(msg));
+                String saveFilePath = filePath + "client_model_"+fileHandler.getClientId() + ".pt";
+                fileHandler.receiveFile(saveFilePath);
+                System.out.println(logMessage("File received and saved to " + saveFilePath));
             }
 
 
@@ -90,7 +90,7 @@ public class Main {
             masterHandler.alertMP("uploaded weight file");
 
             // MP에서 가중치 평균화 끝내는 것을 기다린다. mp.average_weight
-            String msg = masterHandler.getCompleteMessage();
+            masterHandler.getCompleteMessage();
 
         }
 
@@ -102,4 +102,5 @@ public class Main {
         String msg = "[" + time + "] " + message;
         return msg;
     }
+}
 }
