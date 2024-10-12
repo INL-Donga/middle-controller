@@ -42,14 +42,10 @@ class FileHandler {
         InputStream is = clientSocket.getInputStream();
         byte[] buffer = new byte[4096];
         int bytesRead;
-
-        System.out.println("파일을 수신 중입니다...");
         while ((bytesRead = is.read(buffer)) != -1) {
             fos.write(buffer, 0, bytesRead);
         }
         fos.close();
-
-        System.out.println("파일 수신이 완료되었습니다!");
     }
 
 
