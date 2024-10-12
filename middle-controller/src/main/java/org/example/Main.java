@@ -1,6 +1,8 @@
 package org.example;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -24,31 +26,30 @@ public class Main {
          MasterHandler masterHandler = null;
          List<FileHandler> fileHandlerList = new ArrayList<>();
 
-        try (ServerSocket serverSocket = new ServerSocket(9090)) {
 
-            System.out.println(logMessage("Server started. Waiting for connections..."));
+         ServerSocket serverSocket = new ServerSocket((9090));
+
+        System.out.println(logMessage("Server started. Waiting for connections..."));
 
 
-            for(int i =0; i<client_count+1;i++){
-                Socket clientSocket = serverSocket.accept();
+        for(int i =0; i<client_count+1;i++){
+            Socket socket = serverSocket.accept();
 
-                if(i==0){
-                    masterHandler = new MasterHandler(clientSocket,client_count) ;
-                }
-                else{
-                    FileHandler fileHandler = new FileHandler(clientSocket,client_id);
-                    fileHandlerList.add(fileHandler);
-
-                    // 클라이언트별로 고유번호 할당하기
-                    fileHandler.sendClientId(client_id);
-                    client_id++;
-                }
-                System.out.println(logMessage("Accepted Socket: " + clientSocket.getInetAddress()));
+            if(i==0){
+                masterHandler = new MasterHandler(socket,client_count) ;
             }
+            else{
+                FileHandler fileHandler = new FileHandler(socket,client_id);
+                fileHandlerList.add(fileHandler);
 
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+                // 클라이언트별로 고유번호 할당하기
+                fileHandler.sendClientId(client_id);
+                client_id++;
+            }
+            System.out.println(logMessage("Accepted Socket: " + socket.getInetAddress()));
         }
+
+
 
         int exit_code = 0;
         while(true){
@@ -58,6 +59,7 @@ public class Main {
                 String msg =masterHandler.getMessage();
 
                 if(msg.equals("start")){    // mp.deploy_weight
+                    System.out.println(logMessage("Deploy weights to clients"));
                     for(FileHandler fileHandler : fileHandlerList){
                         fileHandler.sendUpdatePt("global_model.pt");   // cp.getUpdatePT
                     }
@@ -79,6 +81,8 @@ public class Main {
                 }
             }
 
+            System.out.println(logMessage("Wait receiving client_models"));
+
             // 클라이언트로부터 학습 .pt 파일 받기
             for(FileHandler fileHandler : fileHandlerList){
                 String saveFilePath = filePath + "client_model_"+fileHandler.getClientId() + ".pt";
@@ -96,6 +100,7 @@ public class Main {
         }
 
     }
+
 
     public static String logMessage(String message){
         SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");

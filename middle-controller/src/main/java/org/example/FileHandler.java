@@ -3,6 +3,7 @@ package org.example;
 
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -33,24 +34,22 @@ class FileHandler {
     }
 
     public void receiveFile(String saveFilePath) throws IOException {
-        try (InputStream inputStream = clientSocket.getInputStream();
-             FileOutputStream fileOutputStream = new FileOutputStream(saveFilePath)) {
+        // 파일 저장 경로 설정
 
-            // 버퍼를 이용해 데이터를 4096 바이트씩 읽음
-            byte[] buffer = new byte[4096];
-            int bytesRead;
+        FileOutputStream fos = new FileOutputStream(saveFilePath);
 
-            // 파일 데이터를 수신하고 저장
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                fileOutputStream.write(buffer, 0, bytesRead);
-            }
+        // 클라이언트로부터 데이터 수신
+        InputStream is = clientSocket.getInputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead;
 
-            fileOutputStream.flush();
-            System.out.println("File received and saved to: " + saveFilePath);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            throw new IOException("파일 수신 중 오류 발생", e);
+        System.out.println("파일을 수신 중입니다...");
+        while ((bytesRead = is.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
         }
+        fos.close();
+
+        System.out.println("파일 수신이 완료되었습니다!");
     }
 
 
@@ -78,31 +77,23 @@ class FileHandler {
         outputStream.flush();
     }
 
-    public void writeFile(Socket clientSocket, File file) throws FileNotFoundException {
+    public void writeFile(Socket clientSocket, File file) throws IOException {
 
+        DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
+        dos.writeLong(file.length());   // 파일크기 보내기
 
-        // 파일이 존재하는지 확인
-        if (!file.exists()) {
-            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + file.getName());
-        }
+        System.out.println(Main.logMessage("file size : " + Long.toString(file.length())));
 
-        // 파일을 읽기 위한 InputStream 생성
-        try (InputStream fileInputStream = new FileInputStream(file);
-             OutputStream outputStream = clientSocket.getOutputStream()) {
-
-            // 버퍼를 이용해 파일 데이터를 읽고 전송
+        try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[4096];
             int bytesRead;
-
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead); // 파일 내용을 소켓으로 전송
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                dos.write(buffer, 0, bytesRead);
             }
+            dos.flush();
+        }
 
-            outputStream.flush(); // 모든 데이터 전송 후 flush
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        dos.flush();
     }
 
     public void getEnd() throws IOException {
