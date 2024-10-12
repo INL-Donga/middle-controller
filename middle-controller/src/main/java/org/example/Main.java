@@ -11,8 +11,9 @@ import java.util.List;
 public class Main {
     public static final int client_count = 1;
 
-    public static final String filePath = "/mnt/parameters/";
+//    public static final String filePath = "/mnt/parameters/";
 
+    public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
 
     public static int client_id = 1;
 
@@ -102,5 +103,4 @@ public class Main {
         String msg = "[" + time + "] " + message;
         return msg;
     }
-}
 }

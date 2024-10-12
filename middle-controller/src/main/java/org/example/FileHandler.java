@@ -48,12 +48,15 @@ class FileHandler {
             fileOutputStream.flush();
             System.out.println("File received and saved to: " + saveFilePath);
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             throw new IOException("파일 수신 중 오류 발생", e);
         }
     }
 
 
     public void sendUpdatePt(String fileName) throws IOException {
+        writeMessage(clientSocket,fileName); // client.recvFile.s.recv(1024)
+
         File file = new File(Main.filePath + fileName);
 
         writeFile(clientSocket, file);
