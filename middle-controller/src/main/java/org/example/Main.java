@@ -50,11 +50,12 @@ public class Main {
         }
 
 
-
+        int round = 0;
         int exit_code = 0;
         while(true){
+            round++;
             // 시작 메시지가 온 것을 확인
-
+            System.out.println(logMessage( "Round " +  Integer.toString(round) + " start" ));
             while(true){
                 String msg =masterHandler.getMessage();
 
@@ -103,7 +104,7 @@ public class Main {
 
 
     public static String logMessage(String message){
-        SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat("mm:ss.SSS");
         String time = formatter.format(new Date());  // 현재 시간을 mm:ss로 포맷
         String msg = "[" + time + "] " + message;
         return msg;

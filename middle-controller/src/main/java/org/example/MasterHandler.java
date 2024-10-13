@@ -33,6 +33,7 @@ class MasterHandler {
 
     public String getCompleteMessage() throws IOException {
         String msg = reader.readLine().trim();
+        System.out.println(Main.logMessage("test : " + msg));
         return msg;
     }
 

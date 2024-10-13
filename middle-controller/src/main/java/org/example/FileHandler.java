@@ -34,19 +34,52 @@ class FileHandler {
     }
 
     public void receiveFile(String saveFilePath) throws IOException {
-        // 파일 저장 경로 설정
-
-        FileOutputStream fos = new FileOutputStream(saveFilePath);
-
         // 클라이언트로부터 데이터 수신
         InputStream is = clientSocket.getInputStream();
-        byte[] buffer = new byte[4096];
-        int bytesRead;
-        while ((bytesRead = is.read(buffer)) != -1) {
-            fos.write(buffer, 0, bytesRead);
+        DataInputStream dis = new DataInputStream(is);
+
+        // 파일 전송 준비 메시지 수신
+        byte[] msgBuffer = new byte[1024];
+        int messageLength = dis.read(msgBuffer);
+        String message = new String(msgBuffer, 0, messageLength, "UTF-8");
+
+        // 클라이언트로부터 "READY_TO_SEND_FILE" 메시지가 도착하면 파일 수신 시작
+        if (message.equals("READY_TO_SEND_FILE")) {
+            System.out.println(Main.logMessage("Client is ready to send file"));
+
+            // 파일 크기 수신
+            long fileSize = dis.readLong();
+            System.out.println(Main.logMessage("Receiving file size : " + fileSize + " bytes"));
+
+            // 파일 저장 경로 설정
+            FileOutputStream fos = new FileOutputStream(saveFilePath);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            long receivedBytes = 0;
+
+            // 파일 크기만큼 데이터를 수신
+            while (receivedBytes < fileSize) {
+                bytesRead = is.read(buffer, 0, (int) Math.min(buffer.length, fileSize - receivedBytes));
+                if (bytesRead == -1) {
+                    break;
+                }
+                fos.write(buffer, 0, bytesRead);
+                receivedBytes += bytesRead;
+            }
+
+            // 파일 저장 종료
+            fos.close();
+            System.out.println(Main.logMessage("File received and saved to: " + saveFilePath));
+
+            // InputStream에서 남은 데이터를 비우는 과정 (만약 남아 있을 경우)
+            while (is.available() > 0) {
+                is.read(buffer);  // 남은 데이터를 모두 소비하여 비움
+            }
+        } else {
+            System.out.println(Main.logMessage("Unexpected message received: " + message));
         }
-        fos.close();
     }
+
 
 
     public void sendUpdatePt(String fileName) throws IOException {
