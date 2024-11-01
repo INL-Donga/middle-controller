@@ -55,11 +55,11 @@ public class Main {
         while(true){
             round++;
             // 시작 메시지가 온 것을 확인
-            System.out.println(logMessage( "Round " +  Integer.toString(round) + " start" ));
             while(true){
                 String msg =masterHandler.getMessage();
 
                 if(msg.equals("start")){    // mp.deploy_weight
+                    System.out.println(logMessage( "Round " +  Integer.toString(round) + " start" ));
                     System.out.println(logMessage("Deploy weights to clients"));
                     for(FileHandler fileHandler : fileHandlerList){
                         fileHandler.sendUpdatePt("global_model.pt");   // cp.getUpdatePT
@@ -80,6 +80,7 @@ public class Main {
                 for(FileHandler fileHandler : fileHandlerList){
                     fileHandler.getEnd();
                 }
+                break;
             }
 
             System.out.println(logMessage("Wait receiving client_models"));
@@ -88,7 +89,6 @@ public class Main {
             for(FileHandler fileHandler : fileHandlerList){
                 String saveFilePath = filePath + "client_model_"+fileHandler.getClientId() + ".pt";
                 fileHandler.receiveFile(saveFilePath);
-                System.out.println(logMessage("File received and saved to " + saveFilePath));
             }
 
 
