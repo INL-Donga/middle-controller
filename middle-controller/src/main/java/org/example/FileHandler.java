@@ -28,10 +28,11 @@ class FileHandler {
         reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     }
 
-    public String getCompleteMessage() throws IOException {
+    public String receiveMessage() throws IOException {
         String msg = reader.readLine().trim();
         return msg;
     }
+
 
     public void receiveFile(String saveFilePath) throws IOException {
         // 클라이언트로부터 데이터 수신
@@ -39,17 +40,21 @@ class FileHandler {
         DataInputStream dis = new DataInputStream(is);
 
         // 파일 전송 준비 메시지 수신
-        byte[] msgBuffer = new byte[1024];
-        int messageLength = dis.read(msgBuffer);
-        String message = new String(msgBuffer, 0, messageLength, "UTF-8");
+//        byte[] msgBuffer = new byte[1024];
+//        int messageLength = dis.read(msgBuffer);
+//        String message = new String(msgBuffer, 0, messageLength, "UTF-8");
+
+        String message = receiveMessage();
 
         // 클라이언트로부터 "READY_TO_SEND_FILE" 메시지가 도착하면 파일 수신 시작
         if (message.equals("READY_TO_SEND_FILE")) {
-            System.out.println(Main.logMessage("Client is ready to send file"));
+            System.out.println(Main.logMessage("Client" + clientId  +" is ready to send file"));
+
+            writeMessage(clientSocket,"ack");
 
             // 파일 크기 수신
             long fileSize = dis.readLong();
-            System.out.println(Main.logMessage("Receiving file size : " + fileSize + " bytes"));
+            System.out.println(Main.logMessage("Client" + clientId  + " Receiving file size : " + fileSize + " bytes"));
 
             // 파일 저장 경로 설정
             FileOutputStream fos = new FileOutputStream(saveFilePath);
@@ -69,14 +74,14 @@ class FileHandler {
 
             // 파일 저장 종료
             fos.close();
-            System.out.println(Main.logMessage("File received and saved to: " + saveFilePath));
+            System.out.println(Main.logMessage("Client" + clientId  + " File received and saved to: " + saveFilePath));
 
             // InputStream에서 남은 데이터를 비우는 과정 (만약 남아 있을 경우)
             while (is.available() > 0) {
                 is.read(buffer);  // 남은 데이터를 모두 소비하여 비움
             }
         } else {
-            System.out.println(Main.logMessage("Unexpected message received: " + message));
+            System.out.println(Main.logMessage("Client" + clientId  + " Unexpected message received: " + message));
         }
     }
 
@@ -84,10 +89,12 @@ class FileHandler {
 
     public void sendUpdatePt(String fileName) throws IOException {
         writeMessage(clientSocket,fileName); // client.recvFile.s.recv(1024)
+        String ack = receiveMessage();
+        if(ack.equals("ack")){
+            File file = new File(Main.filePath + fileName);
 
-        File file = new File(Main.filePath + fileName);
-
-        writeFile(clientSocket, file);
+            writeFile(clientSocket, file);
+        }
 
     }
 
@@ -111,7 +118,7 @@ class FileHandler {
         DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
         dos.writeLong(file.length());   // 파일크기 보내기
 
-        System.out.println(Main.logMessage("file size : " + Long.toString(file.length())));
+        System.out.println(Main.logMessage("Client" + clientId  +" file size : " + file.length()));
 
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[4096];
@@ -127,6 +134,6 @@ class FileHandler {
 
     public void getEnd() throws IOException {
         String msg = reader.readLine().trim();
-        System.out.println("Program End : " + msg);
+        System.out.println("Client" + clientId  +" Program End : " + msg);
     }
 }
