@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-    public static final int client_count = 2;
+    public static final int client_count = 3;
     public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
     public static int client_id = 1;
 
