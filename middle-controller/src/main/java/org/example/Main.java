@@ -14,8 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-    public static final int client_count = 3;
-    public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
+//    public static final int client_count = 2;
+    public static final int client_count = Integer.parseInt(System.getenv("CLIENT_COUNT"));
+
+//    public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
+
+    public static final String filePath = System.getenv("FILE_PATH");
     public static int client_id = 1;
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -27,10 +31,11 @@ public class Main {
 
         for (int i = 0; i < client_count + 1; i++) {
             Socket socket = serverSocket.accept();
+            String clientIp = socket.getInetAddress().getHostAddress();
 
-            if (i == 0) {
+            if (clientIp.equals("127.0.0.1")) {
                 masterHandler = new MasterHandler(socket, client_count);
-                System.out.println(logMessage("Server Accepted Socket: " + socket.getInetAddress()));
+                System.out.println(logMessage("Server Accepted Socket: " + socket.getInetAddress() + " as Master"));
             } else {
                 FileHandler fileHandler = new FileHandler(socket, client_id);
                 fileHandlerList.add(fileHandler);
@@ -39,7 +44,6 @@ public class Main {
                 System.out.println(logMessage("Server Accepted Socket: " + socket.getInetAddress() + "\t Set Client id : " + client_id));
                 client_id++;
             }
-
         }
 
         int round = 0;
