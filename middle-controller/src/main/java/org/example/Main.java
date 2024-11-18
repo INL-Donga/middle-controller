@@ -14,12 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-//    public static final int client_count = 2;
-    public static final int client_count = Integer.parseInt(System.getenv("CLIENT_COUNT"));
+    public static final int client_count = 2;
+//    public static final int client_count = Integer.parseInt(System.getenv("CLIENT_COUNT"));
 
-//    public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
+    public static final String filePath = "D:\\INL\\RnD\\middle-controller\\middle-controller\\middle-controller\\parameters\\";
 
-    public static final String filePath = System.getenv("FILE_PATH");
+//    public static final String filePath = System.getenv("FILE_PATH");
     public static int client_id = 1;
 
     public static void main(String[] args) throws IOException, InterruptedException {
